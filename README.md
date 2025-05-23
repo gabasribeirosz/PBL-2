@@ -117,3 +117,19 @@ A biblioteca possibilitou abstrair detalhes da comunicação de baixo nível, to
 A atividade proposta neste problema proporcionou uma rica experiência prática com interação hardware-software, uso de Assembly na arquitetura ARM e exploração dos recursos da plataforma DE1-SoC. A biblioteca desenvolvida cumpriu seu papel de intermediar a comunicação entre o processador e o coprocessador matricial, oferecendo uma solução eficiente e reutilizável.
 
 A compreensão adquirida sobre mapeamento de memória, integração com Linux embarcado e uso de Assembly contribui significativamente para a formação técnica dos discentes em sistemas embarcados e computação de alto desempenho.
+
+## 8. Referências
+
+[1] ARM Limited. **ARM Cortex-A9 Technical Reference Manual**. ARM DDI 0388I (ID091612), 2012.
+
+[2] Intel Corporation. **Intel SoC FPGA Embedded Development Suite User Guide**. UG-1137, Version 16.1, 2016.
+
+[3] Altera Corporation. **Cyclone V Hard Processor System Technical Reference Manual**. CV-5V2, Version 15.1, 2015.
+
+[4] TERASIC Inc. **DE1-SoC User Manual**. Version 1.2.4, 2014. Disponível em: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=205&No=836
+
+[5] ARM Limited. **ARM Architecture Reference Manual ARMv7-A and ARMv7-R edition**. ARM DDI 0406C.d, 2018.
+
+[6] GOLUB, Gene H.; VAN LOAN, Charles F. **Matrix Computations**. 4th ed. Baltimore: Johns Hopkins University Press, 2013.
+
+[7] PATTERSON, David A.; HENNESSY, John L. **Computer Organization and Design: The Hardware/Software Interface**. 5th ed. Morgan Kaufmann, 2013.
