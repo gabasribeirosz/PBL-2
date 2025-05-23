@@ -1,8 +1,8 @@
-# PBL-2: Biblioteca Assembly para Coprocessador de Matricial na DE1-SoC
+# PBL-2: Biblioteca Assembly para Coprocessador de Multiplicação Matricial na DE1-SoC
 
 ## 1. Introdução
 
-Com a crescente demanda por aplicações que exigem alto desempenho computacional, como visão computacional, aprendizado de máquina e criptografia, o uso de hardware especializado para acelerar operações matemáticas torna-se essencial. No contexto da plataforma DE1-SoC, que combina um processador ARM (HPS) com uma FPGA, este trabalho tem como objetivo desenvolver uma biblioteca em linguagem Assembly para facilitar o uso de um coprocessador dedicado à multiplicação matricial, previamente implementado em hardware.
+Com a crescente demanda por aplicações de alto desempenho computacional — como visão computacional, aprendizado profundo, criptografia e simulações científicas — torna-se imprescindível o uso de hardware especializado para acelerar operações matemáticas complexas. No contexto da plataforma DE1-SoC, que integra um processador ARM Cortex-A9 (HPS) com uma FPGA (Cyclone V), este projeto visa desenvolver uma biblioteca em linguagem Assembly ARM para interação eficiente com um coprocessador de multiplicação matricial implementado na FPGA.
 
 ---
 
@@ -10,15 +10,15 @@ Com a crescente demanda por aplicações que exigem alto desempenho computaciona
 
 ### 2.1 Objetivo Geral
 
-Desenvolver uma biblioteca em Assembly ARM que abstraia as operações de baixo nível necessárias para comunicação com o coprocessador de multiplicação matricial implementado na FPGA, proporcionando uma interface eficiente e de fácil utilização.
+Desenvolver uma biblioteca em Assembly ARMv7-A compatível com o HPS da DE1-SoC que abstraia os detalhes de comunicação de baixo nível com um coprocessador de multiplicação matricial via interface de memória mapeada, fornecendo uma API de alto desempenho e baixo overhead.
 
 ### 2.2 Objetivos Específicos
 
-- Implementar rotinas de comunicação entre HPS e FPGA através de interfaces de memória mapeada  
-- Desenvolver funções de controle e sincronização para o coprocessador  
-- Criar rotinas otimizadas para transferência de dados matriciais  
-- Implementar mecanismos de verificação de integridade e tratamento de erros  
-- Validar o desempenho da biblioteca através de testes comparativos  
+- ✅ Implementar rotinas de leitura/escrita utilizando mapeamento de memória (`mmap`) em Linux embarcado  
+- ✅ Desenvolver funções para controle e sincronização do coprocessador via registradores de controle  
+- ✅ Criar rotinas eficientes para transferência de blocos matriciais com alinhamento em word boundaries  
+- ✅ Implementar verificações de integridade baseadas em códigos de status e timeouts  
+- ✅ Comparar desempenho com versão puramente em software utilizando medições de tempo (`gettimeofday`)  
 
 ---
 
@@ -26,77 +26,69 @@ Desenvolver uma biblioteca em Assembly ARM que abstraia as operações de baixo 
 
 ### 3.1 Arquitetura ARM e Mapeamento de Memória
 
-A arquitetura ARM é uma arquitetura RISC (Reduced Instruction Set Computing), caracterizada por um conjunto de instruções simplificado que proporciona alta eficiência energética e desempenho. 
+| Item               | Descrição                                                                 |
+|--------------------|---------------------------------------------------------------------------|
+| Arquitetura        | ARMv7-A, pipeline dual-issue superscalar, conjunto de instruções Thumb-2 |
+| Acesso a HW        | Via `mmap()` e ponteiros para regiões de memória física                   |
+| Vantagens          | Baixo consumo, alta eficiência, acesso determinístico a periféricos       |
 
-Na DE1-SoC, o processador ARM Cortex-A9 atua como unidade principal do HPS, comunicando-se com a FPGA via barramentos específicos.
-
-O mapeamento de memória permite que o software acesse dispositivos de hardware como se fossem regiões da memória RAM, por meio de endereços físicos definidos. No Linux embarcado, isso é feito utilizando chamadas como `mmap()`, permitindo o acesso direto aos registradores de controle e dados do coprocessador.
-
----
+No Linux embarcado, o mapeamento de memória é feito através da abertura do `/dev/mem` e uso da syscall `mmap()`, o que permite acessar os registradores do coprocessador como ponteiros de memória comum.
 
 ### 3.2 Integração HPS–FPGA na DE1-SoC
 
-A comunicação entre o HPS (Linux) e a FPGA ocorre por meio de bridges AXI, principalmente:
+| Bridge AXI                  | Largura | Latência | Utilização                          |
+|----------------------------|---------|----------|-------------------------------------|
+| Lightweight HPS-FPGA       | 32 bits | Baixa    | Controle, configuração, status      |
+| HPS-to-FPGA (normal)       | 128 bits| Média    | Escrita de operandos                |
+| FPGA-to-HPS                | 128 bits| Média    | Leitura de resultados               |
 
-- **Lightweight HPS-to-FPGA Bridge**: acesso a registradores de controle e status  
-- **HPS-to-FPGA Bridge**: transferência de dados de alta largura de banda  
-- **FPGA-to-HPS Bridge**: acesso direto à memória pelo coprocessador  
+Fluxo de operação:
 
-O processo básico de comunicação envolve:
+1. Escrita dos operandos A e B nos registradores de dados via HPS-to-FPGA  
+2. Escrita de flag de controle para iniciar operação  
+3. Polling no registrador de status ou uso de interrupções para sinalizar conclusão  
+4. Leitura do resultado via FPGA-to-HPS  
 
-1. Inicialização do sistema (mapeamento de registradores)  
-2. Escrita dos operandos nos endereços designados  
-3. Sinalização de início da operação  
-4. Aguardar conclusão (polling ou interrupção)  
-5. Leitura dos resultados  
+### 3.3 Assembly ARM em Sistemas Embarcados
 
----
-
-### 3.3 Linguagem Assembly e sua Utilização em Sistemas Embarcados
-
-Assembly oferece controle direto sobre registradores e instruções da CPU, essencial para:
-
-- Acesso direto a registradores mapeados  
-- Controle preciso do fluxo de execução  
-- Minimização do overhead de compiladores  
-- Rotinas de baixo nível para acesso a hardware  
-
-Neste projeto, a biblioteca Assembly funciona como uma camada de abstração para uso do coprocessador matricial, organizando dados e gerenciando sincronização da operação.
-
----
+- Acesso direto aos registradores (ex: `LDR`, `STR`, `MOV`)  
+- Controle de sincronização com `DMB`, `DSB`, `ISB`  
+- Desempenho máximo sem intervenção de compilador  
+- Uso de pilha (`STMFD`, `LDMFD`) e registradores dedicados (`r4-r11` callee-saved)
 
 ### 3.4 Plataforma DE1-SoC
 
-A DE1-SoC é uma plataforma baseada no SoC FPGA Cyclone V da Intel, que combina:
+| Componente         | Especificação                                     |
+|--------------------|---------------------------------------------------|
+| SoC                | Intel Cyclone V SX-5                              |
+| HPS                | ARM Cortex-A9 Dual-Core, até 925MHz               |
+| FPGA               | 85K LEs, 4MB RAM embutida, interfaces AXI         |
+| Periféricos        | SDRAM, GPIO, LEDs, Chaves, PLLs, UART, etc.       |
+| OS embarcado       | Linux 4.x baseado em Linaro ou Yocto              |
 
-- Subsystem HPS com processador dual-core ARM Cortex-A9  
-- Blocos programáveis (FPGA) para implementação de hardware customizado  
-- Interfaces integradas: SDRAM, GPIO, LEDs, switches, bridges para FPGA  
-
-Essa arquitetura possibilita sistemas heterogêneos, onde o processamento é dividido entre software flexível (HPS) e hardware acelerado (FPGA).
-
-O coprocessador matricial foi implementado na FPGA e a biblioteca Assembly desenvolvida no HPS permite a interação eficiente entre software e hardware.
-
----
+A DE1-SoC permite integração tight-coupled entre lógica reconfigurável e processador, possibilitando arquiteturas heterogêneas com aceleração dedicada.
 
 ### 3.5 Padrões de Codificação e Reusabilidade
 
-Seguindo boas práticas recomendadas, o projeto busca garantir:
+- Modularização: separação em arquivos `.s` por função  
+- Conformidade com a convenção de chamada ARM EABI  
+- Uso de macros e `.equ` para endereços e constantes  
+- Comentários descritivos com tags `@param`, `@return`, `@error`  
+- Diretório estruturado: `asm/`, `c_src/`, `include/`, `build/`
 
-- Clareza e organização nos arquivos  
-- Consistência na nomenclatura de variáveis e funções  
-- Documentação clara e comentários no código  
-- Facilidade para manutenção e evolução  
-- Integração simples com outros projetos futuros
+---
 
 ## 4. Metodologia
-O desenvolvimento da solução foi dividido nas seguintes etapas:
-1. Análise do problema e levantamento de requisitos: Entendimento do funcionamento do coprocessador existente e definição das funções necessárias para interagir com ele.
-2. Definição da arquitetura da biblioteca: Organização das funções Assembly que irão lidar com o envio de dados e leitura de resultados.
-3. Integração com linguagem C: Criação de um programa em C que usa a biblioteca Assembly, sendo responsável por preparar os dados e interpretar os resultados.
-4. Criação de Makefile: Automatização da compilação dos códigos com uso de scripts Makefile.
-5. Documentação técnica: Produção do README.md com instruções de compilação, instalação e uso da biblioteca.
 
+| Etapa                          | Descrição                                                                 |
+|-------------------------------|---------------------------------------------------------------------------|
+| Levantamento de requisitos    | Análise dos registradores e protocolo do coprocessador                   |
+| Design da API Assembly        | Definição de funções: `init`, `write_matrix`, `start`, `poll`, `read`    |
+| Integração C ↔ Assembly       | Interface via `extern` e convenção de pilha                              |
+| Testes funcionais             | Matrizes de teste: identidade, zeros, aleatórias                         |
+| Benchmark de desempenho       | Tempo médio em microsegundos com e sem aceleração                        |
+
+---
 ## 5. Desenvolvimento
 A biblioteca Assembly foi implementada com as seguintes funcionalidades básicas:
 
