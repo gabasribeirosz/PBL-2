@@ -127,6 +127,42 @@ A biblioteca Assembly foi dividida em módulos claros e bem estruturados, cada u
 
 ---
 
+### Mapeamento dos Registradores (Interface HPS–FPGA)
+
+A comunicação entre o processador ARM (HPS) e o coprocessador implementado na FPGA é realizada por meio de dois registradores de 32 bits, denominados `Data_In` e `Data_Out`. Esses registradores são acessados via ponte Lightweight AXI utilizando memória mapeada (`/dev/mem`).
+
+### Registrador de Entrada: Data_In (32 bits)
+
+O registrador `Data_In` é utilizado para enviar comandos e dados da aplicação em C (executando no HPS) para o coprocessador na FPGA. Cada campo desse registrador possui uma função específica:
+
+- **Bit 31 (`hps_ready`)**: Sinaliza para a FPGA que os dados enviados pelo HPS estão prontos para serem lidos.
+- **Bit 30 (`start`)**: Indica o início de uma operação.
+- **Bit 29 (`reset`)**: Solicita a reinicialização do coprocessador.
+- **Bits de 28 a 21 (`scalar`)**: Contêm um valor escalar utilizado em operações específicas, como multiplicação por escalar.
+- **Bits de 20 a 19 (`size`)**: Representam o tamanho da matriz envolvida na operação (por exemplo, 2x2, 3x3, etc.).
+- **Bits de 18 a 16 (`opcode`)**: Definem qual operação deve ser executada pelo coprocessador. Os códigos válidos são:
+  - `0x0`: Soma (A + B)
+  - `0x1`: Subtração (A - B)
+  - `0x2`: Multiplicação matricial (A × B)
+  - `0x3`: Transposição da matriz A
+  - `0x4`: Oposto da matriz A (negativo de cada elemento)
+  - `0x5`: Determinante da matriz A (válido apenas para matrizes 2x2 ou 3x3)
+- **Bits de 15 a 8 (`data_b`)**: Contêm o valor de um elemento da matriz B.
+- **Bits de 7 a 0 (`data_a`)**: Contêm o valor de um elemento da matriz A.
+
+### Registrador de Saída: Data_Out (32 bits)
+
+O registrador `Data_Out` é utilizado pela FPGA para retornar os resultados das operações ao HPS. Sua estrutura é definida da seguinte forma:
+
+- **Bit 31 (`fpga_wait`)**: Indica se a FPGA ainda está processando a operação (sinal de espera ativo).
+- **Bit 30 (`overflow`)**: Sinaliza que ocorreu um overflow durante o processamento da operação.
+- **Bits de 29 a 8 (reservado)**: Região atualmente não utilizada. Reservada para uso futuro.
+- **Bits de 7 a 0 (`matrix_result`)**: Contêm o resultado de um elemento da matriz processada pela FPGA.
+
+Esses registradores constituem a interface de comunicação essencial entre software e hardware no sistema embarcado da DE1-SoC, sendo fundamental configurar corretamente cada campo para garantir o funcionamento adequado do coprocessador matricial.
+
+---
+
 ### Integração com C
 
 O programa em C foi responsável por:
