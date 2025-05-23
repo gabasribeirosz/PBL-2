@@ -143,10 +143,8 @@ O registrador `Data_In` é utilizado para enviar comandos e dados da aplicação
 - **Bits de 18 a 16 (`opcode`)**: Definem qual operação deve ser executada pelo coprocessador. Os códigos válidos são:
   - `0x0`: Soma (A + B)
   - `0x1`: Subtração (A - B)
-  - `0x2`: Multiplicação matricial (A × B)
-  - `0x3`: Transposição da matriz A
-  - `0x4`: Oposto da matriz A (negativo de cada elemento)
-  - `0x5`: Determinante da matriz A (válido apenas para matrizes 2x2 ou 3x3)
+  - `0x2`: Multiplicação Escalar 
+  - `0x3`: Multiplicação Matricial (A × B)
 - **Bits de 15 a 8 (`data_b`)**: Contêm o valor de um elemento da matriz B.
 - **Bits de 7 a 0 (`data_a`)**: Contêm o valor de um elemento da matriz A.
 
@@ -172,24 +170,19 @@ O programa em C foi responsável por:
 - Fornecer um menu interativo com as operações disponíveis:
   - Soma
   - Subtração
-  - Multiplicação
-  - Transposição
-  - Oposto
-  - Determinante
+  - Multiplicação por Escalar
+  - Multiplicação Matricial
 
 ## Operações Disponíveis
 
 O sistema desenvolvido permite ao usuário executar as seguintes operações matriciais para o coprocessador implementado na FPGA:
 
-| Código | Operação      | Descrição Técnica                                                                 |
-|--------|---------------|-----------------------------------------------------------------------------------|
-| 0x0    | Soma           | Soma elemento a elemento entre matrizes A e B.                                   |
-| 0x1    | Subtração      | Subtrai matriz B da matriz A, elemento a elemento.                               |
-| 0x2    | Multiplicação  | Multiplica as matrizes A e B conforme a álgebra linear.                          |
-| 0x3    | Transposição   | Transpõe a matriz A (resultado: Aᵗ).                                              |
-| 0x4    | Oposto         | Calcula o oposto (negativo) de cada elemento da matriz A.                        |
-| 0x5    | Determinante   | Calcula o determinante da matriz A (limitado a matrizes quadradas de 2x2 ou 3x3). |
-
+| Código | Operação                  | Descrição Técnica                                                                |
+|--------|---------------------------|----------------------------------------------------------------------------------|
+| 0x0    | Soma                      | Soma elemento a elemento entre matrizes A e B.                                   |
+| 0x1    | Subtração                 | Subtrai matriz B da matriz A, elemento a elemento.                               |
+| 0x2    | Multiplicação Escalar     | Multiplica as matrizes A e B conforme a álgebra linear.                          |
+| 0x3    | Multiplicação Matricial   | Transpõe a matriz A (resultado: Aᵗ).                                             |
 ---
 
 ### Compilação e Execução
