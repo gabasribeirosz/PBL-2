@@ -90,15 +90,70 @@ A DE1-SoC permite integração tight-coupled entre lógica reconfigurável e pro
 
 ---
 ## 5. Desenvolvimento
-A biblioteca Assembly foi implementada com as seguintes funcionalidades básicas:
 
-1. Escrita dos operandos nas regiões mapeadas da memória;
-2. Sinalização de início da operação ao coprocessador;
-3. Leitura do resultado após a conclusão da operação.
+A biblioteca desenvolvida em Assembly foi projetada para operar como intermediária entre o processador ARM (HPS) e o coprocessador de multiplicação matricial implementado na FPGA da plataforma DE1-SoC. Esta biblioteca foi integrada a um programa em linguagem C, que atua como interface de alto nível, permitindo a entrada de dados pelo usuário e a visualização dos resultados das operações.
 
-O código foi estruturado em conformidade com os padrões estabelecidos, contendo comentários explicativos e modularização adequada. O programa em C foi utilizado como interface de alto nível para interação com o usuário, fornecendo os dados de entrada (matrizes) e exibindo os resultados.
+### Funcionalidades Implementadas
 
-Um Makefile foi desenvolvido para compilar tanto os códigos Assembly quanto os arquivos C, gerando um binário executável diretamente na DE1-SoC. Todos os testes foram executados no Linux embarcado, configurado conforme a documentação.
+A biblioteca Assembly foi dividida em módulos claros e bem estruturados, cada um responsável por uma etapa crítica da comunicação com o coprocessador. As principais funcionalidades incluem:
+
+#### Inicialização do Hardware (`initialize_hardware`)
+- Abre o dispositivo `/dev/mem` utilizando syscall direta (`open`);
+- Realiza o mapeamento de memória física da ponte Lightweight HPS-FPGA com `mmap2`;
+- Armazena os ponteiros globais (`data_in_ptr` e `data_out_ptr`) para acesso aos registradores do hardware;
+- Tratamento robusto de erros para falhas na abertura ou mapeamento da memória.
+
+#### Encerramento da Sessão (`close_hardware`)
+- Desfaz o mapeamento de memória com `munmap`;
+- Fecha o descritor de arquivo aberto previamente com `close`.
+
+#### Envio dos Dados de Entrada (`send_matrix_data`)
+- Realiza a configuração dos registradores com os parâmetros da operação (matrizes A e B, tipo de operação, tamanho e escalar);
+- Envia pulsos de `reset` e `start` para o coprocessador;
+- Empacota os dados de cada elemento das matrizes utilizando deslocamentos e operações lógicas (bitwise);
+- Utiliza protocolo de handshake para envio seguro dos dados via registradores.
+
+#### Recebimento dos Resultados (`receive_matrix_results`)
+- Lê os valores dos registradores de saída;
+- Desempacota os dados e extrai a flag de overflow (bit 30) e o valor resultante (bits [7:0]);
+- Utiliza protocolo de handshake para garantir sincronização com o coprocessador.
+
+#### Funções Auxiliares de Handshake
+- `handshake_send`: Garante que o dado seja aceito pela FPGA antes de enviar o próximo.
+- `handshake_receive`: Aguarda até que a FPGA sinalize a presença de novo dado antes de realizar a leitura.
+
+#### Delay Controlado (`delay_loop`)
+- Delay simples baseado em contagem para garantir tempo entre pulso de `reset` e `start`.
+
+---
+
+### Integração com C
+
+O programa em C foi responsável por:
+- Obter entrada do usuário (valores das matrizes e parâmetros);
+- Invocar as funções Assembly via protótipos definidos no cabeçalho `interface.h`;
+- Exibir os resultados na tela de forma legível;
+- Fornecer um menu interativo com as operações disponíveis:
+  - Soma
+  - Subtração
+  - Multiplicação
+  - Transposição
+  - Oposto
+  - Determinante
+
+---
+
+### Compilação e Execução
+
+Um `Makefile` foi desenvolvido para automatizar o processo de compilação, utilizando:
+
+- `arm-linux-gnueabihf-gcc` para o código C;
+- `arm-linux-gnueabihf-as`/`ld` para o código Assembly.
+
+O binário gerado é executável diretamente no sistema Linux embarcado da DE1-SoC.
+
+A execução dos testes foi realizada no ambiente embarcado, com o sistema Linux configurado conforme a documentação da Altera/Intel.  
+A comunicação com a FPGA foi validada com sucesso, e os resultados obtidos foram compatíveis com os valores esperados para cada operação matricial.
 
 ## 6. Resultados
 Os testes realizados incluíram operações com matrizes 2x2, 3x3, 4x4 e 5x5, com validação manual dos resultados. O sistema demonstrou correta comunicação entre HPS e FPGA, com tempos de execução significativamente menores do que a implementação puramente em software.
