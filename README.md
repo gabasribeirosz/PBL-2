@@ -141,6 +141,19 @@ O programa em C foi responsável por:
   - Oposto
   - Determinante
 
+## Operações Disponíveis
+
+O sistema desenvolvido permite ao usuário executar as seguintes operações matriciais para o coprocessador implementado na FPGA:
+
+| Código | Operação      | Descrição Técnica                                                                 |
+|--------|---------------|-----------------------------------------------------------------------------------|
+| 0x0    | Soma           | Soma elemento a elemento entre matrizes A e B.                                   |
+| 0x1    | Subtração      | Subtrai matriz B da matriz A, elemento a elemento.                               |
+| 0x2    | Multiplicação  | Multiplica as matrizes A e B conforme a álgebra linear.                          |
+| 0x3    | Transposição   | Transpõe a matriz A (resultado: Aᵗ).                                              |
+| 0x4    | Oposto         | Calcula o oposto (negativo) de cada elemento da matriz A.                        |
+| 0x5    | Determinante   | Calcula o determinante da matriz A (limitado a matrizes quadradas de 2x2 ou 3x3). |
+
 ---
 
 ### Compilação e Execução
@@ -156,14 +169,38 @@ A execução dos testes foi realizada no ambiente embarcado, com o sistema Linux
 A comunicação com a FPGA foi validada com sucesso, e os resultados obtidos foram compatíveis com os valores esperados para cada operação matricial.
 
 ## 6. Resultados
-Os testes realizados incluíram operações com matrizes 2x2, 3x3, 4x4 e 5x5, com validação manual dos resultados. O sistema demonstrou correta comunicação entre HPS e FPGA, com tempos de execução significativamente menores do que a implementação puramente em software.
 
-A biblioteca possibilitou abstrair detalhes da comunicação de baixo nível, tornando o desenvolvimento de aplicações com aceleração em hardware mais acessível.
+Durante a fase de testes, foram realizadas extensas verificações funcionais e de desempenho utilizando matrizes de dimensões **2x2, 3x3, 4x4 e 5x5**, cobrindo todas as operações suportadas pelo coprocessador (soma, subtração, multiplicação, transposição, oposto e determinante). Os resultados de cada operação foram **validados manualmente** por meio de cálculos independentes realizados em software, assegurando a precisão dos dados retornados pela FPGA.
+
+A **comunicação entre o processador ARM (HPS) e o coprocessador** implementado na FPGA se mostrou robusta, com todas as transações de leitura e escrita ocorrendo de forma sincronizada graças à implementação correta do **protocolo de handshake** via registradores. O uso de **pulsos de controle** (reset e start) e sinalização de busy garantiu o comportamento determinístico do sistema mesmo sob múltiplas execuções sequenciais.
+
+Em termos de desempenho, observou-se uma **redução expressiva no tempo de execução** das operações em comparação com uma implementação equivalente feita exclusivamente em software. Especialmente nas multiplicações de matrizes 4x4 e 5x5, o ganho de tempo foi significativo, evidenciando os benefícios da **offload de operações intensivas** para lógica programável.
+
+A biblioteca Assembly **abstraiu com sucesso os detalhes do mapeamento de memória e da configuração dos registradores**, oferecendo uma interface estável e reutilizável para desenvolvimento de aplicações aceleradas por hardware. Isso permitiu que o código em C permanecesse **simples e focado na lógica de aplicação**, sem a necessidade de interagir diretamente com os recursos de baixo nível do sistema.
+
+---
 
 ## 7. Conclusão
-A atividade proposta neste problema proporcionou uma rica experiência prática com interação hardware-software, uso de Assembly na arquitetura ARM e exploração dos recursos da plataforma DE1-SoC. A biblioteca desenvolvida cumpriu seu papel de intermediar a comunicação entre o processador e o coprocessador matricial, oferecendo uma solução eficiente e reutilizável.
 
-A compreensão adquirida sobre mapeamento de memória, integração com Linux embarcado e uso de Assembly contribui significativamente para a formação técnica dos discentes em sistemas embarcados e computação de alto desempenho.
+A resolução deste problema representou uma oportunidade valiosa de **integração prática entre software e hardware** na plataforma DE1-SoC. O projeto exigiu a construção de uma biblioteca em Assembly capaz de **intermediar a comunicação entre o processador ARM Cortex-A9 (HPS) e um coprocessador de multiplicação matricial** implementado na FPGA.
+
+### Essa integração envolveu:
+
+- A **manipulação direta de periféricos via *memory-mapped I/O***, utilizando *syscalls* do Linux para abrir e mapear `/dev/mem`;
+- A **escrita de código Assembly otimizado** para a arquitetura ARMv7-A, respeitando convenções de chamada (ABI) e utilizando instruções específicas para controle de fluxo, manipulação de bits e chamadas de sistema;
+- A **configuração de uma interface binária limpa entre Assembly e C**, via `interface.h`, permitindo chamadas diretas a partir de programas de alto nível;
+- A **construção de um ambiente de compilação cruzada** com uso das ferramentas `arm-linux-gnueabihf-*` para geração de binários compatíveis com o sistema Linux embarcado na DE1-SoC.
+
+Além disso, o uso do coprocessador possibilitou **acelerar significativamente o tempo de resposta** das operações matriciais, demonstrando na prática o poder da **computação heterogênea** em sistemas embarcados.
+
+### A atividade consolidou conhecimentos fundamentais sobre:
+
+- Comunicação HPS-FPGA via **ponte Lightweight AXI**;
+- Programação de **baixo nível em Assembly** em contexto real;
+- Técnicas de **abstração para hardware em ambientes Linux embarcado**;
+- Organização **modular de bibliotecas de acesso a hardware personalizado**.
+
+Como resultado, a biblioteca desenvolvida tornou-se uma **base sólida para futuros projetos** que envolvam aceleração por hardware na DE1-SoC, **incentivando o uso de FPGAs como extensores computacionais** em aplicações de alto desempenho.
 
 ## 8. Referências
 
