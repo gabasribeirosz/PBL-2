@@ -1,5 +1,21 @@
 # PBL-2: Biblioteca Assembly para Coprocessador de Multiplicação Matricial na DE1-SoC
 
+<div align="center">
+  Doscente: Wild Freitas
+</div>
+
+<div align="center">
+  Discentes: Gabriel Ribeiro Souza & Lyrton Marcell & Israel Oliveira
+</div>
+
+<div align="center">
+  Universidade Estadual de Feira de Santana (UEFS) - Bahia
+</div>
+
+<div align="center">
+  Endereço: Av. Transnordestina, S/N - Bairro: Novo Horizonte - CEP: 44036-900
+</div>
+
 ## 1. Introdução
 
 Com a crescente demanda por aplicações de alto desempenho computacional — como visão computacional, aprendizado profundo, criptografia e simulações científicas — torna-se imprescindível o uso de hardware especializado para acelerar operações matemáticas complexas. No contexto da plataforma DE1-SoC, que integra um processador ARM Cortex-A9 (HPS) com uma FPGA (Cyclone V), este projeto visa desenvolver uma biblioteca em linguagem Assembly ARM para interação eficiente com um coprocessador de multiplicação matricial implementado na FPGA.
