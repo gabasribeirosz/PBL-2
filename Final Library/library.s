@@ -290,5 +290,5 @@ handshake_receive:
     MOV r0, #1                  @ Retorna HW_READ_FAIL (1)
 
 .handshake_exit:
-    POP {r2-r5, lr}             @ Restaura registradores
-    BX lr                       @ Retorna
+    POP {r2-r5, lr}            
+    BX lr                       
