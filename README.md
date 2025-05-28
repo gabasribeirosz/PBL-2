@@ -107,7 +107,7 @@ A DE1-SoC permite integração tight-coupled entre lógica reconfigurável e pro
 ---
 ## 5. Desenvolvimento
 
-A biblioteca desenvolvida em Assembly foi projetada para operar como intermediária entre o processador ARM (HPS) e o coprocessador de multiplicação matricial implementado na FPGA da plataforma DE1-SoC. Esta biblioteca foi integrada a um programa em linguagem C, que atua como interface de alto nível, permitindo a entrada de dados pelo usuário e a visualização dos resultados das operações.
+A biblioteca desenvolvida em Assembly foi projetada para operar como intermediária entre o processador ARM (HPS) e o coprocessador de multiplicação matricial implementado na FPGA da plataforma DE1-SoC. Esta biblioteca foi integrada a um programa em linguagem C, que atua como interface de alto nível, permitindo a entrada de dados pelo usuário e a visualização dos resultados das operações. Foi utilizado um cooprocessador disponibilizado por um dos colegas em sessão, foi o cooprocessador do grupo de Cleidson Ramos.
 
 ### Funcionalidades Implementadas
 
