@@ -13,7 +13,6 @@ void show_operation_menu() {
     printf("1 - Subtração\n");
     printf("2 - Multiplicação escalar\n");
     printf("3 - Multiplicação matricial\n");
-    printf("4 - Matriz oposta\n");
     printf("Digite a operação: ");
 }
 
