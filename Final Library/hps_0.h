@@ -2,19 +2,16 @@
 #define INTERFACE_H
 #include <stdint.h>
 
-/* ========== CONSTANTES DE STATUS ========== */
 #define HW_SUCCESS      0
 #define HW_INIT_FAIL   -1
 #define HW_SEND_FAIL   -2
 #define HW_READ_FAIL   -3
 
-/* ========== DEFINIÇÕES DE HARDWARE ========== */
 #define DATA_IN_BASE    0x0
 #define DATA_OUT_BASE   0x10
 #define LW_BRIDGE_BASE  0xFF200000
 #define LW_BRIDGE_SPAN  0x00005000
 
-/* ========== BITS DE CONTROLE ========== */
 #define OPCODE_BITS     (3 << 16)
 #define SIZE_BITS       (3 << 19)
 #define SCALAR_BITS     (3 << 21)
@@ -32,7 +29,6 @@ struct MatrixParams {
     uint32_t scalar;             // Valor escalar para multiplicação
 };
 
-/* ========== DECLARAÇÕES DE FUNÇÕES ASSEMBLY ========== */
 extern int initialize_hardware(void);
 extern int close_hardware(void);
 extern int send_matrix_data(const struct MatrixParams* params);
