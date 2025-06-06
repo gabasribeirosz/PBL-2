@@ -20,7 +20,6 @@
 #define HPS_CONTROL_BIT (1 << 31)
 #define FPGA_ACK_BIT    (1 << 31)
 
-/* ========== ESTRUTURAS DE DADOS ========== */
 struct MatrixParams {
     const int8_t* matrix_a;      // Primeira matriz de entrada
     const int8_t* matrix_b;      // Segunda matriz de entrada
